@@ -1,6 +1,7 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
 from datetime import datetime
 from decimal import Decimal
+
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
 class AccountCreate(BaseModel):
@@ -15,7 +16,7 @@ class AccountCreate(BaseModel):
     def validate_balance(cls, value: Decimal) -> Decimal:
         if value < 0:
             raise ValueError("Balance must be greater than or equal to 0")
-        
+
         return value
 
 
