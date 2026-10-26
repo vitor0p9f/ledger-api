@@ -24,7 +24,7 @@ class AccountResponse(BaseModel):
 
     id: int
     name: str
-    balance: float
+    balance: Decimal
     created_at: datetime
     updated_at: datetime
 

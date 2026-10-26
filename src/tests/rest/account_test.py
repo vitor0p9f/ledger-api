@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from fastapi.testclient import TestClient
 
 from src.server.server import app
@@ -59,7 +61,7 @@ def test_create_account():
 
     try:
         assert data["name"] == "Conta teste"
-        assert data["balance"] == 100.0
+        assert Decimal(data["balance"]) == Decimal("100.00")
     finally:
         delete_account(data["id"])
 
@@ -98,7 +100,7 @@ def test_update_account_cannot_change_balance():
         )
 
         assert response.status_code == 200
-        assert response.json()["balance"] == 10.0
+        assert Decimal(response.json()["balance"]) == Decimal("10.00")
     finally:
         delete_account(account["id"])
 

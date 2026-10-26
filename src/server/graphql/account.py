@@ -1,6 +1,7 @@
 import strawberry
 from strawberry.fastapi import GraphQLRouter
 from datetime import datetime
+from decimal import Decimal
 from typing import List, Optional
 
 from src.database import SessionLocal
@@ -11,7 +12,7 @@ from src.models.account import Account as AccountModel
 class Account:
     id: int
     name: str
-    balance: float
+    balance: Decimal
     created_at: datetime
     updated_at: datetime
 
@@ -19,10 +20,10 @@ class Account:
 @strawberry.input
 class AccountCreate:
     name: str
-    balance: float
+    balance: Decimal
 
     def __post_init__(self):
-        if self.balance < 0:
+        if self.balance < Decimal("0"):
             raise ValueError("Balance must be greater than or equal to 0")
 
 

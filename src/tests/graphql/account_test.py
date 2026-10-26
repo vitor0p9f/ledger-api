@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from fastapi.testclient import TestClient
 
 from src.server.server import app
@@ -91,7 +93,7 @@ def test_create_account():
 
     try:
         assert account["name"] == "Conta teste"
-        assert account["balance"] == 100.0
+        assert Decimal(account["balance"]) == Decimal("100.00")
     finally:
         delete_account(account["id"])
 
