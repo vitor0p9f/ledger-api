@@ -7,7 +7,7 @@ from src.server.server import app
 client = TestClient(app)
 
 
-def create_account(name: str = "Conta teste", balance: float = 100.0) -> dict:
+def create_account(name: str = "Test account", balance: float = 100.0) -> dict:
     response = client.post("/accounts/", json={"name": name, "balance": balance})
 
     assert response.status_code == 200
@@ -52,7 +52,7 @@ def test_get_account_by_id_returns_404():
 def test_create_account():
     response = client.post(
         "/accounts/",
-        json={"name": "Conta teste", "balance": 100.0},
+        json={"name": "Test account", "balance": 100.0},
     )
 
     assert response.status_code == 200
@@ -60,7 +60,7 @@ def test_create_account():
     data = response.json()
 
     try:
-        assert data["name"] == "Conta teste"
+        assert data["name"] == "Test account"
         assert Decimal(data["balance"]) == Decimal("100.00")
     finally:
         delete_account(data["id"])
@@ -69,34 +69,34 @@ def test_create_account():
 def test_account_not_be_created_with_negative_balance():
     response = client.post(
         "/accounts/",
-        json={"name": "Conta teste", "balance": -100.0},
+        json={"name": "Test account", "balance": -100.0},
     )
 
     assert response.status_code == 422
 
 
 def test_update_account_name():
-    account = create_account(name="Conta A", balance=10.0)
+    account = create_account(name="Account A", balance=10.0)
 
     try:
         response = client.patch(
             f"/accounts/{account['id']}",
-            json={"name": "Novo nome"},
+            json={"name": "New name"},
         )
 
         assert response.status_code == 200
-        assert response.json()["name"] == "Novo nome"
+        assert response.json()["name"] == "New name"
     finally:
         delete_account(account["id"])
 
 
 def test_update_account_cannot_change_balance():
-    account = create_account(name="Conta A", balance=10.0)
+    account = create_account(name="Account A", balance=10.0)
 
     try:
         response = client.patch(
             f"/accounts/{account['id']}",
-            json={"name": "Novo nome", "balance": 999.0},
+            json={"name": "New name", "balance": 999.0},
         )
 
         assert response.status_code == 200
@@ -108,7 +108,7 @@ def test_update_account_cannot_change_balance():
 def test_update_account_returns_404():
     response = client.patch(
         "/accounts/999999",
-        json={"name": "Novo nome"},
+        json={"name": "New name"},
     )
 
     assert response.status_code == 404

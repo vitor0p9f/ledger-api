@@ -17,7 +17,7 @@ def execute(query: str, variables: dict | None = None) -> dict:
     return response.json()
 
 
-def create_account(name: str = "Conta teste", balance: float = 100.0) -> dict:
+def create_account(name: str = "Test account", balance: float = 100.0) -> dict:
     body = execute(
         """
             mutation CreateAccount($input: AccountCreate!) {
@@ -89,10 +89,10 @@ def test_get_account_by_id():
 
 
 def test_create_account():
-    account = create_account(name="Conta teste", balance=100.0)
+    account = create_account(name="Test account", balance=100.0)
 
     try:
-        assert account["name"] == "Conta teste"
+        assert account["name"] == "Test account"
         assert Decimal(account["balance"]) == Decimal("100.00")
     finally:
         delete_account(account["id"])
@@ -108,7 +108,7 @@ def test_account_not_be_created_with_negative_balance():
                 }
             }
         """,
-        {"input": {"name": "Conta teste", "balance": -100.0}},
+        {"input": {"name": "Test account", "balance": -100.0}},
     )
 
     assert body["data"]["createAccount"] is None
@@ -116,7 +116,7 @@ def test_account_not_be_created_with_negative_balance():
 
 
 def test_update_account_name():
-    account = create_account(name="Conta A", balance=10.0)
+    account = create_account(name="Account A", balance=10.0)
 
     try:
         body = execute(
@@ -129,18 +129,18 @@ def test_update_account_name():
             """,
             {
                 "accountId": account["id"],
-                "input": {"name": "Novo nome"},
+                "input": {"name": "New name"},
             },
         )
 
         assert body.get("errors") is None
-        assert body["data"]["updateAccount"]["name"] == "Novo nome"
+        assert body["data"]["updateAccount"]["name"] == "New name"
     finally:
         delete_account(account["id"])
 
 
 def test_update_account_cannot_change_balance():
-    account = create_account(name="Conta A", balance=10.0)
+    account = create_account(name="Account A", balance=10.0)
 
     try:
         body = execute(
@@ -153,7 +153,7 @@ def test_update_account_cannot_change_balance():
             """,
             {
                 "accountId": account["id"],
-                "input": {"name": "Novo nome", "balance": 999.0},
+                "input": {"name": "New name", "balance": 999.0},
             },
         )
 
@@ -174,7 +174,7 @@ def test_update_account_returns_null_when_not_found():
         """,
         {
             "accountId": 999999,
-            "input": {"name": "Novo nome"},
+            "input": {"name": "New name"},
         },
     )
 
