@@ -1,6 +1,7 @@
 import strawberry
 from strawberry.fastapi import GraphQLRouter
 
+
 @strawberry.type
 class HealthResponse:
     message: str
@@ -12,7 +13,5 @@ class Query:
     def health(self) -> HealthResponse:
         return HealthResponse(message="API is healthy and running!")
 
-
-schema = strawberry.Schema(Query)
-
-graphQL_router = GraphQLRouter(schema)
+health_schema = strawberry.Schema(Query)
+graphql_health_router = GraphQLRouter(health_schema)
