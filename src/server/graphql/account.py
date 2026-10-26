@@ -45,7 +45,7 @@ class AccountUpdate:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def create_account(self, input: AccountCreate) -> Account:
+    def create_account(self, input: AccountCreate) -> Account | None:
         database = SessionLocal()
 
         try:
