@@ -5,7 +5,9 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session, sessionmaker
 
+from src.models.account import Account  # noqa: F401
 from src.models.base import Base
+from src.models.transaction import Transaction  # noqa: F401
 
 load_dotenv()
 
