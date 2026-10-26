@@ -7,3 +7,6 @@ __pycache__/
 
 # Python compiled / optimized code
 *.py[cod]
+
+# Serena agent artifacts
+.serena/
