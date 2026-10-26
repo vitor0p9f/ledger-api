@@ -1,8 +1,8 @@
-import strawberry
-from strawberry.fastapi import GraphQLRouter
 from datetime import datetime
 from decimal import Decimal
-from typing import List, Optional
+
+import strawberry
+from strawberry.fastapi import GraphQLRouter
 
 from src.database import SessionLocal
 from src.models.account import Account as AccountModel
@@ -16,6 +16,16 @@ class Account:
     created_at: datetime
     updated_at: datetime
 
+    @classmethod
+    def from_model(cls, account: AccountModel) -> "Account":
+        return cls(
+            id=account.id,
+            name=account.name,
+            balance=account.balance,
+            created_at=account.created_at,
+            updated_at=account.updated_at,
+        )
+
 
 @strawberry.input
 class AccountCreate:
@@ -23,72 +33,100 @@ class AccountCreate:
     balance: Decimal
 
     def __post_init__(self):
-        if self.balance < Decimal("0"):
+        if self.balance < Decimal(0):
             raise ValueError("Balance must be greater than or equal to 0")
 
 
 @strawberry.input
 class AccountUpdate:
     name: str
-    
+
 
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def create_account(self, input: AccountCreate) -> Optional[Account]:
+    def create_account(self, input: AccountCreate) -> Account:
         database = SessionLocal()
 
-        new_account = AccountModel(name=input.name, balance=input.balance)
-        database.add(new_account)
-        database.commit()
-        database.refresh(new_account)
+        try:
+            new_account = AccountModel(name=input.name, balance=input.balance)
+            database.add(new_account)
+            database.commit()
+            database.refresh(new_account)
 
-        return new_account
+            return Account.from_model(new_account)
+        except Exception as _:
+            database.rollback()
+            raise
+        finally:
+            database.close()
 
     @strawberry.mutation
-    def update_account(self, account_id: int, input: AccountUpdate) -> Optional[Account]:
+    def update_account(self, account_id: int, input: AccountUpdate) -> Account | None:
         database = SessionLocal()
-        account = database.query(AccountModel).filter(AccountModel.id == account_id).first()
 
-        if not account:
-            return None
+        try:
+            account = database.query(AccountModel).filter(AccountModel.id == account_id).first()
 
-        account.name = input.name
-        database.commit()
-        database.refresh(account)
+            if not account:
+                return None
 
-        return account
+            account.name = input.name
+            database.commit()
+            database.refresh(account)
+
+            return Account.from_model(account)
+        except Exception as _:
+            database.rollback()
+            raise
+        finally:
+            database.close()
 
     @strawberry.mutation
     def delete_account(self, account_id: int) -> bool:
         database = SessionLocal()
-        account = database.query(AccountModel).filter(AccountModel.id == account_id).first()
 
-        if not account:
-            return False
+        try:
+            account = database.query(AccountModel).filter(AccountModel.id == account_id).first()
 
-        database.delete(account)
-        database.commit()
+            if not account:
+                return False
 
-        return True
+            if account.transactions:
+                raise ValueError("Account has transactions!")
+
+            database.delete(account)
+            database.commit()
+
+            return True
+        except Exception as _:
+            database.rollback()
+            raise
+        finally:
+            database.close()
 
 @strawberry.type
 class Query:
     @strawberry.field
-    def accounts(self) -> List[Account]:
+    def accounts(self) -> list[Account]:
         database = SessionLocal()
-        
+
         try:
-            return database.query(AccountModel).all()
+            return [Account.from_model(account) for account in database.query(AccountModel).all()]
         finally:
             database.close()
 
     @strawberry.field
-    def account(self, account_id: int) -> Optional[Account]:
+    def account(self, account_id: int) -> Account | None:
         database = SessionLocal()
 
         try:
-            return database.query(AccountModel).filter(AccountModel.id == account_id).first()
+            account = database.query(AccountModel).filter(AccountModel.id == account_id).first()
+
+            if not account:
+                return None
+
+            return Account.from_model(account)
         finally:
             database.close()
 
